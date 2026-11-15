@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lampang Agricultural Market Intelligence 2026</title>
+<link href="https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-sans-thai@latest/thai-400-normal.woff2" rel="preload" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-sans-thai@latest/thai-400-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-sans-thai@latest/thai-600-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-sans-thai@latest/thai-700-normal.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{--deep-pink:#A81752;--rich-rose:#C93672;--medium-pink:#E77DA5;--soft-pink:#F5C5D7;--pale-pink:#FCEAF1;--white:#FFFFFF;--champagne-gold:#C6A15B;--light-gold:#E8D5A8;--dark-text:#342832;--soft-gray:#F6F4F5;--sidebar-w:260px;--header-h:72px;--filter-h:60px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--soft-gray);color:var(--dark-text);overflow-x:hidden}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--pale-pink)}
+::-webkit-scrollbar-thumb{background:var(--medium-pink);border-radius:3px}
+.header{position:fixed;top:0;left:0;right:0;height:var(--header-h);background:linear-gradient(135deg,var(--deep-pink),var(--rich-rose));color:var(--white);display:flex;align-items:center;padding:0 24px;z-index:1000;box-shadow:0 2px 12px rgba(168,23,82,.3)}
+.header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--champagne-gold),var(--light-gold),var(--champagne-gold))}
+.header-logo{display:flex;align-items:center;gap:16px}
+.header-logo svg{width:44px;height:44px;flex-shrink:0}
+.header-title h1{font-size:18px;font-weight:700;letter-spacing:.5px}
+.header-title p{font-size:12px;opacity:.85;margin-top:2px}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.header-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);padding:4px 14px;border-radius:20px;font-size:11px;color:var(--light-gold)}
+.sidebar{position:fixed;top:var(--header-h);left:0;width:var(--sidebar-w);height:calc(100vh - var(--header-h));background:var(--white);border-right:1px solid var(--soft-pink);overflow-y:auto;z-index:900;transition:transform .3s}
+.sidebar-nav{padding:12px 0}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;transition:all .2s;border-left:3px solid transparent;font-size:13px;color:var(--dark-text);text-decoration:none}
+.nav-item:hover{background:var(--pale-pink);color:var(--deep-pink)}
+.nav-item.active{background:var(--pale-pink);border-left-color:var(--deep-pink);color:var(--deep-pink);font-weight:600}
+.nav-item .nav-icon{width:20px;text-align:center;font-size:16px}
+.nav-item .nav-num{font-size:10px;color:var(--medium-pink);font-weight:600;min-width:22px}
+.sidebar-footer{padding:16px 20px;border-top:1px solid var(--soft-pink);margin-top:auto}
+.sidebar-footer p{font-size:10px;color:var(--medium-pink);line-height:1.6}
+.main{margin-left:var(--sidebar-w);margin-top:var(--header-h);padding:20px;min-height:calc(100vh - var(--header-h))}
+.filter-bar{background:var(--white);border-radius:12px;padding:16px 20px;margin-bottom:20px;box-shadow:0 1px 6px rgba(168,23,82,.06);border:1px solid var(--soft-pink);display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.filter-group{display:flex;flex-direction:column;gap:3px;min-width:140px;flex:1}
+.filter-group label{font-size:10px;font-weight:600;color:var(--deep-pink);text-transform:uppercase;letter-spacing:.5px}
+.filter-group select,.filter-group input{padding:6px 10px;border:1px solid var(--soft-pink);border-radius:6px;font-size:12px;font-family:inherit;background:var(--white);color:var(--dark-text);outline:none;transition:border-color .2s}
+.filter-group select:focus,.filter-group input:focus{border-color:var(--rich-rose)}
+.filter-actions{display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap}
+.btn{padding:7px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.btn-primary{background:var(--deep-pink);color:var(--white)}
+.btn-primary:hover{background:var(--rich-rose)}
+.btn-gold{background:var(--champagne-gold);color:var(--white)}
+.btn-gold:hover{background:#b8933f}
+.btn-outline{background:transparent;border:1px solid var(--medium-pink);color:var(--deep-pink)}
+.btn-outline:hover{background:var(--pale-pink)}
+.module{display:none}
+.module.active{display:block}
+.module-title{font-size:20px;font-weight:700;color:var(--deep-pink);margin-bottom:4px;display:flex;align-items:center;gap:10px}
+.module-title::before{content:'';width:4px;height:24px;background:linear-gradient(var(--champagne-gold),var(--deep-pink));border-radius:2px}
+.module-subtitle{font-size:12px;color:var(--medium-pink);margin-bottom:20px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:24px}
+.kpi-card{background:var(--white);border-radius:10px;padding:16px;border:1px solid var(--soft-pink);box-shadow:0 1px 4px rgba(168,23,82,.05);position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--deep-pink),var(--champagne-gold))}
+.kpi-label{font-size:10px;color:var(--medium-pink);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px}
+.kpi-value{font-size:22px;font-weight:700;color:var(--deep-pink)}
+.kpi-unit{font-size:11px;color:var(--medium-pink);margin-top:2px}
+.chart-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:20px}
+.chart-grid.three{grid-template-columns:repeat(3,1fr)}
+.chart-card{background:var(--white);border-radius:10px;padding:18px;border:1px solid var(--soft-pink);box-shadow:0 1px 4px rgba(168,23,82,.05)}
+.chart-card.full{grid-column:1/-1}
+.chart-card h3{font-size:13px;font-weight:600;color:var(--deep-pink);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--pale-pink)}
+.chart-container{position:relative;width:100%;min-height:280px}
+.chart-container canvas{width:100%!important}
+.data-table{width:100%;border-collapse:collapse;font-size:12px}
+.data-table thead{background:var(--pale-pink)}
+.data-table th{padding:8px 10px;text-align:left;font-weight:600;color:var(--deep-pink);border-bottom:2px solid var(--soft-pink);font-size:11px;white-space:nowrap}
+.data-table td{padding:7px 10px;border-bottom:1px solid var(--soft-pink)}
+.data-table tbody tr:hover{background:var(--pale-pink)}
+.data-table .num{text-align:right;font-variant-numeric:tabular-nums}
+.insight-box{background:linear-gradient(135deg,var(--pale-pink),var(--white));border:1px solid var(--soft-pink);border-radius:10px;padding:16px 20px;margin-bottom:20px;position:relative;overflow:hidden}
+.insight-box::before{content:'';position:absolute;top:0;left:0;bottom:0;width:4px;background:var(--champagne-gold)}
+.insight-box h4{font-size:13px;font-weight:600;color:var(--deep-pink);margin-bottom:8px}
+.insight-box p{font-size:12px;line-height:1.7;color:var(--dark-text)}
+.insight-box ul{font-size:12px;line-height:1.8;color:var(--dark-text);padding-left:16px}
+.segment-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:24px}
+.segment-card{background:var(--white);border-radius:12px;padding:20px;border:1px solid var(--soft-pink);cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+.segment-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(168,23,82,.12)}
+.segment-card.active{border-color:var(--deep-pink);box-shadow:0 4px 16px rgba(168,23,82,.15)}
+.segment-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px}
+.segment-card:nth-child(1)::before{background:#A81752}
+.segment-card:nth-child(2)::before{background:#C93672}
+.segment-card:nth-child(3)::before{background:#E77DA5}
+.segment-card:nth-child(4)::before{background:#C6A15B}
+.segment-card:nth-child(5)::before{background:#8B6914}
+.segment-card h4{font-size:14px;font-weight:700;color:var(--deep-pink);margin-bottom:2px}
+.segment-card .seg-en{font-size:10px;color:var(--medium-pink);margin-bottom:10px}
+.segment-card .seg-desc{font-size:11px;color:#666;line-height:1.5;margin-bottom:12px}
+.segment-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.seg-stat{font-size:11px}
+.seg-stat span{display:block;font-size:10px;color:var(--medium-pink)}
+.seg-stat strong{color:var(--deep-pink);font-size:14px}
+.policy-dimensions{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:20px}
+.policy-card{background:var(--white);border-radius:12px;padding:20px;border:1px solid var(--soft-pink);position:relative;overflow:hidden}
+.policy-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--deep-pink),var(--champagne-gold))}
+.policy-card h4{font-size:14px;font-weight:700;color:var(--deep-pink);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.policy-card h4 .dim-num{background:var(--deep-pink);color:var(--white);width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px}
+.policy-card ul{font-size:12px;line-height:1.8;padding-left:16px;color:var(--dark-text)}
+.policy-card .fact{border-left:3px solid var(--champagne-gold);padding-left:10px;margin:8px 0;font-size:11px;background:var(--pale-pink);padding:8px 10px;border-radius:0 6px 6px 0}
+.heatmap-grid{display:grid;grid-template-columns:120px repeat(12,1fr);gap:2px;font-size:10px;margin-bottom:16px}
+.heatmap-cell{padding:6px 4px;text-align:center;border-radius:3px;font-size:10px;min-height:28px;display:flex;align-items:center;justify-content:center}
+.heatmap-header{font-weight:600;color:var(--deep-pink);background:var(--pale-pink)}
+.heatmap-label{font-weight:600;color:var(--dark-text);background:var(--pale-pink);text-align:left;padding-left:8px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.loading{display:flex;align-items:center;justify-content:center;height:60vh;flex-direction:column;gap:16px}
+.loading-spinner{width:48px;height:48px;border:4px solid var(--soft-pink);border-top-color:var(--deep-pink);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{color:var(--medium-pink);font-size:14px}
+.footer-bar{background:var(--white);border-top:2px solid var(--champagne-gold);padding:16px 24px;margin-top:30px;text-align:center}
+.footer-bar p{font-size:11px;color:var(--medium-pink);line-height:1.8}
+.footer-bar .motto{font-size:12px;color:var(--deep-pink);font-weight:600;font-style:italic;margin-top:8px}
+.menu-toggle{display:none;background:none;border:none;color:var(--white);font-size:24px;cursor:pointer}
+@media(max-width:1024px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main{margin-left:0}.menu-toggle{display:block}.chart-grid{grid-template-columns:1fr}.chart-grid.three{grid-template-columns:1fr}}
+.tab-pills{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.tab-pill{padding:6px 14px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid var(--soft-pink);background:var(--white);color:var(--dark-text);transition:all .2s}
+.tab-pill.active{background:var(--deep-pink);color:var(--white);border-color:var(--deep-pink)}
+.alert-box{background:#FFF8E1;border:1px solid var(--champagne-gold);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px}
+.alert-box strong{color:var(--champagne-gold)}
+.legend-inline{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;font-size:11px}
+.legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:4px}
+</style>
+</head>
+<body>
+<div class="header">
+<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+<div class="header-logo">
+<svg viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="20" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/><path d="M22 8c-2 4-6 7-6 12a6 6 0 0012 0c0-5-4-8-6-12z" fill="#C6A15B" opacity=".9"/><path d="M22 14c-1.2 2.5-3.5 4.5-3.5 7.5a3.5 3.5 0 007 0c0-3-2.3-5-3.5-7.5z" fill="#fff" opacity=".6"/><path d="M16 30h12M18 33h8" stroke="#C6A15B" stroke-width="1.5" stroke-linecap="round"/></svg>
+<div class="header-title">
+<h1>LAMPANG AGRICULTURAL MARKET INTELLIGENCE</h1>
+<p>ระบบสารสนเทศการตลาดสินค้าเกษตรอัจฉริยะ จังหวัดลำปาง ประจำปี 2569</p>
+</div>
+</div>
+<div class="header-right">
+<span class="header-badge">📊 Market Intelligence → Production Planning → Market-Oriented Agriculture</span>
+</div>
+</div>
+
+<nav class="sidebar" id="sidebar">
+<div class="sidebar-nav">
+<a class="nav-item active" data-module="mod1" onclick="switchModule('mod1',this)"><span class="nav-num">01</span><span class="nav-icon">📊</span>Executive Overview</a>
+<a class="nav-item" data-module="mod2" onclick="switchModule('mod2',this)"><span class="nav-num">02</span><span class="nav-icon">🎯</span>Market Segmentation</a>
+<a class="nav-item" data-module="mod3" onclick="switchModule('mod3',this)"><span class="nav-num">03</span><span class="nav-icon">📦</span>Product Intelligence</a>
+<a class="nav-item" data-module="mod4" onclick="switchModule('mod4',this)"><span class="nav-num">04</span><span class="nav-icon">📅</span>Seasonal Supply</a>
+<a class="nav-item" data-module="mod5" onclick="switchModule('mod5',this)"><span class="nav-num">05</span><span class="nav-icon">🗺️</span>Geographic Intelligence</a>
+<a class="nav-item" data-module="mod6" onclick="switchModule('mod6',this)"><span class="nav-num">06</span><span class="nav-icon">🔀</span>Distribution</a>
+<a class="nav-item" data-module="mod7" onclick="switchModule('mod7',this)"><span class="nav-num">07</span><span class="nav-icon">📈</span>Production Planning</a>
+<a class="nav-item" data-module="mod8" onclick="switchModule('mod8',this)"><span class="nav-num">08</span><span class="nav-icon">📋</span>Policy Insight</a>
+</div>
+<div class="sidebar-footer">
+<p>จัดทำโดย: กลุ่มสารสนเทศการเกษตร<br>สำนักงานเกษตรและสหกรณ์จังหวัดลำปาง<br><strong style="color:var(--champagne-gold)">LAMPANG AMI 2026</strong></p>
+</div>
+</nav>
+
+<div class="main" id="mainContent">
+<div class="filter-bar" id="filterBar">
+<div class="filter-group"><label>อำเภอ</label><select id="fDistrict" onchange="applyFilters()"><option value="">ทั้งหมด</option></select></div>
+<div class="filter-group"><label>กลุ่มสินค้าเกษตรใหม่</label><select id="fGroup" onchange="applyFilters()"><option value="">ทั้งหมด</option></select></div>
+<div class="filter-group"><label>กลุ่มสินค้า</label><select id="fGroupOld" onchange="applyFilters()"><option value="">ทั้งหมด</option></select></div>
+<div class="filter-group"><label>ประเภทสินค้า</label><select id="fType" onchange="applyFilters()"><option value="">ทั้งหมด</option></select></div>
+<div class="filter-group"><label>ชนิดสินค้า</label><select id="fKind" onchange="applyFilters()"><option value="">ทั้งหมด</option></select></div>
+<div class="filter-group"><label>สินค้า</label><select id="fProduct" onchange="applyFilters()"><option value="">ทั้งหมด</option></select></div>
+<div class="filter-group"><label>ค้นหาสินค้า</label><input type="text" id="fSearch" placeholder="พิมพ์ชื่อสินค้า..." oninput="applyFilters()"></div>
+<div class="filter-actions">
+<button class="btn btn-outline" onclick="resetFilters()">🔄 Reset</button>
+<button class="btn btn-gold" onclick="exportExcel()">📥 Excel</button>
+<button class="btn btn-gold" onclick="exportCSV()">📥 CSV</button>
+</div>
+</div>
+
+<!-- MODULE 1: Executive Overview -->
+<div class="module active" id="mod1">
+<div class="module-title">Executive Market Intelligence Overview</div>
+<div class="module-subtitle">ภาพรวมสถานการณ์สินค้าเกษตรจังหวัดลำปาง ประจำปี 2569</div>
+<div class="kpi-grid" id="kpiGrid"></div>
+<div class="insight-box" id="execInsight"></div>
+<div class="chart-grid">
+<div class="chart-card"><h3>สัดส่วนสินค้าเกษตร 5 กลุ่ม</h3><div class="chart-container"><canvas id="m1Donut"></canvas></div></div>
+<div class="chart-card"><h3>ปริมาณผลผลิตรายกลุ่ม (ตัน)</h3><div class="chart-container"><canvas id="m1Bar"></canvas></div></div>
+<div class="chart-card full"><h3>Treemap สัดส่วนสินค้าแต่ละชนิด (ปริมาณผลผลิต)</h3><div class="chart-container" id="m1Treemap" style="min-height:320px"></div></div>
+<div class="chart-card"><h3>เปรียบเทียบผลผลิตรายกลุ่ม</h3><div class="chart-container"><canvas id="m1BarCompare"></canvas></div></div>
+<div class="chart-card"><h3>Top 10 สินค้าตามปริมาณผลผลิต</h3><div class="chart-container"><canvas id="m1TopProd"></canvas></div></div>
+</div>
+<div class="chart-card full" style="margin-bottom:20px"><h3>Top 10 สินค้าตามจำนวนเกษตรกร (ครัวเรือน)</h3><div style="overflow-x:auto"><table class="data-table" id="m1Table"></table></div></div>
+</div>
+
+<!-- MODULE 2: Strategic Market Segmentation -->
+<div class="module" id="mod2">
+<div class="module-title">Strategic Market Segmentation</div>
+<div class="module-subtitle">วิเคราะห์โครงสร้างตลาดสินค้าเกษตร 5 กลุ่มเชิงยุทธศาสตร์</div>
+<div class="segment-cards" id="segmentCards"></div>
+<div class="chart-grid">
+<div class="chart-card"><h3>สัดส่วนผลผลิตทั้ง 5 กลุ่ม</h3><div class="chart-container"><canvas id="m2Donut"></canvas></div></div>
+<div class="chart-card"><h3>เปรียบเทียบปริมาณผลผลิต</h3><div class="chart-container"><canvas id="m2HBar"></canvas></div></div>
+<div class="chart-card full"><h3>Bubble Chart: จำนวนเกษตรกร × พื้นที่ × ผลผลิต</h3><div class="chart-container"><canvas id="m2Bubble"></canvas></div></div>
+</div>
+<div class="chart-card full" style="margin-bottom:20px"><h3>Matrix: สินค้า × กลุ่มสินค้า × อำเภอ</h3><div style="overflow-x:auto"><table class="data-table" id="m2Matrix"></table></div></div>
+</div>
+
+<!-- MODULE 3: Product Intelligence -->
+<div class="module" id="mod3">
+<div class="module-title">Product Intelligence & Portfolio Analysis</div>
+<div class="module-subtitle">วิเคราะห์ศักยภาพโครงสร้างการผลิตรายสินค้า</div>
+<div class="chart-grid">
+<div class="chart-card"><h3>Top 10 สินค้าตามปริมาณผลผลิต</h3><div class="chart-container"><canvas id="m3Bar1"></canvas></div></div>
+<div class="chart-card"><h3>Top 10 สินค้าตามจำนวนเกษตรกร</h3><div class="chart-container"><canvas id="m3Bar2"></canvas></div></div>
+<div class="chart-card"><h3>Top 10 สินค้าตามพื้นที่เพาะปลูก</h3><div class="chart-container"><canvas id="m3Bar3"></canvas></div></div>
+<div class="chart-card"><h3>ความสัมพันธ์: พื้นที่ vs ผลผลิต</h3><div class="chart-container"><canvas id="m3Scatter1"></canvas></div></div>
+<div class="chart-card"><h3>ความสัมพันธ์: เกษตรกร vs ผลผลิต</h3><div class="chart-container"><canvas id="m3Scatter2"></canvas></div></div>
+<div class="chart-card"><h3>Heatmap: สินค้า × อำเภอ</h3><div class="chart-container" id="m3Heatmap" style="min-height:300px;overflow:auto"></div></div>
+</div>
+<div class="chart-card full" style="margin-bottom:20px"><h3>ตารางข้อมูลสินค้าพร้อมตัวชี้วัด</h3><div style="overflow-x:auto"><table class="data-table" id="m3Table"></table></div></div>
+</div>
+
+<!-- MODULE 4: Seasonal Supply -->
+<div class="module" id="mod4">
+<div class="module-title">Seasonal Supply Intelligence</div>
+<div class="module-subtitle">วิเคราะห์ปฏิทินผลผลิตและช่วงเวลาสินค้าเกษตร</div>
+<div class="filter-bar" style="margin-bottom:16px">
+<div class="filter-group"><label>เลือกกลุ่มสินค้า</label><select id="m4Group" onchange="updateM4()"><option value="">ทั้งหมด</option></select></div>
+<div class="filter-group"><label>เลือกสินค้า</label><select id="m4Product" onchange="updateM4()"><option value="">ทั้งหมด</option></select></div>
+<div class="filter-group"><label>เลือกอำเภอ</label><select id="m4District" onchange="updateM4()"><option value="">ทั้งหมด</option></select></div>
+</div>
+<div class="alert-box" id="seasonalAlert"></div>
+<div class="chart-grid">
+<div class="chart-card full"><h3>ปฏิทินผลผลิตการเกษตร (Heatmap 12 เดือน)</h3><div id="m4Calendar" style="overflow-x:auto"></div></div>
+<div class="chart-card"><h3>ปริมาณผลผลิตรายเดือน (ผลผลิตจริง)</h3><div class="chart-container"><canvas id="m4Monthly"></canvas></div></div>
+<div class="chart-card"><h3>ประมาณการผลผลิตรายเดือน</h3><div class="chart-container"><canvas id="m4Forecast"></canvas></div></div>
+<div class="chart-card full"><h3>เปรียบเทียบผลผลิตจริง vs ประมาณการรายเดือน</h3><div class="chart-container"><canvas id="m4Compare"></canvas></div></div>
+</div>
+<div class="chart-card full" style="margin-bottom:20px"><h3>Seasonal Concentration Matrix</h3><div style="overflow-x:auto"><table class="data-table" id="m4ConcMatrix"></table></div></div>
+</div>
+
+<!-- MODULE 5: Geographic Intelligence -->
+<div class="module" id="mod5">
+<div class="module-title">Geographic Market Intelligence</div>
+<div class="module-subtitle">วิเคราะห์โครงสร้างการผลิตระดับพื้นที่ 13 อำเภอ</div>
+<div class="chart-grid">
+<div class="chart-card"><h3>ปริมาณผลผลิตรายอำเภอ (ตัน)</h3><div class="chart-container"><canvas id="m5Bar1"></canvas></div></div>
+<div class="chart-card"><h3>จำนวนเกษตรกรรายอำเภอ (ครัวเรือน)</h3><div class="chart-container"><canvas id="m5Bar2"></canvas></div></div>
+<div class="chart-card"><h3>พื้นที่เพาะปลูก vs พื้นที่เก็บเกี่ยว</h3><div class="chart-container"><canvas id="m5Bar3"></canvas></div></div>
+<div class="chart-card"><h3>Heatmap: อำเภอ × กลุ่มสินค้า 5 กลุ่ม</h3><div class="chart-container" id="m5Heatmap" style="min-height:300px;overflow:auto"></div></div>
+</div>
+<div class="chart-card full" style="margin-bottom:20px"><h3>District Product Portfolio Table</h3><div style="overflow-x:auto"><table class="data-table" id="m5Table"></table></div></div>
+</div>
+
+<!-- MODULE 6: Distribution -->
+<div class="module" id="mod6">
+<div class="module-title">Production & Distribution Intelligence</div>
+<div class="module-subtitle">วิเคราะห์สมดุลการผลิตและการกระจายสินค้า</div>
+<div class="chart-grid">
+<div class="chart-card"><h3>การกระจายผลผลิต: ภายใน vs ภายนอกจังหวัด</h3><div class="chart-container"><canvas id="m6StackBar"></canvas></div></div>
+<div class="chart-card"><h3>สัดส่วนการกระจายสินค้า</h3><div class="chart-container"><canvas id="m6Donut"></canvas></div></div>
+<div class="chart-card full"><h3>Sankey Diagram: กลุ่มสินค้า → การกระจาย</h3><div class="chart-container" id="m6Sankey" style="min-height:350px"></div></div>
+</div>
+<div class="chart-card full" style="margin-bottom:20px"><h3>Product Distribution Ranking</h3><div style="overflow-x:auto"><table class="data-table" id="m6Table"></table></div></div>
+</div>
+
+<!-- MODULE 7: Production Planning -->
+<div class="module" id="mod7">
+<div class="module-title">Next-Year Production Planning</div>
+<div class="module-subtitle">ระบบสนับสนุนการวางแผนการผลิตปีถัดไป</div>
+<div class="chart-grid">
+<div class="chart-card"><h3>เปรียบเทียบผลผลิตปัจจุบัน vs ปีถัดไป</h3><div class="chart-container"><canvas id="m7Cluster"></canvas></div></div>
+<div class="chart-card"><h3>ผลต่างปริมาณผลผลิต (Variance)</h3><div class="chart-container"><canvas id="m7Variance"></canvas></div></div>
+<div class="chart-card full"><h3>Monthly Forecast Trend</h3><div class="chart-container"><canvas id="m7Trend"></canvas></div></div>
+</div>
+<div class="insight-box" id="m7PlanningInsight"></div>
+<div class="chart-card full" style="margin-bottom:20px"><h3>District Production Planning Matrix</h3><div style="overflow-x:auto"><table class="data-table" id="m7Table"></table></div></div>
+</div>
+
+<!-- MODULE 8: Policy Insight -->
+<div class="module" id="mod8">
+<div class="module-title">Data Insight → Strategic Policy</div>
+<div class="module-subtitle">สรุปข้อมูลเพื่อสนับสนุนการกำหนดนโยบายและแผนปฏิบัติงาน</div>
+<div class="policy-dimensions" id="policyCards"></div>
+<div class="chart-card full" style="margin-bottom:20px">
+<h3>ข้อเสนอเชิงยุทธศาสตร์</h3>
+<div id="strategicProposals"></div>
+</div>
+</div>
+
+<div class="footer-bar">
+<p>ที่มา: สำนักงานเกษตรจังหวัดลำปาง และสำนักงานเกษตรอำเภอ 13 อำเภอ<br>
+จัดทำโดย: กลุ่มสารสนเทศการเกษตร สำนักงานเกษตรและสหกรณ์จังหวัดลำปาง<br>
+<strong style="color:var(--champagne-gold)">LAMPANG AGRICULTURAL MARKET INTELLIGENCE 2026</strong></p>
+<p class="motto">"เปลี่ยนข้อมูลการผลิต สู่ข้อมูลเชิงตลาด ขับเคลื่อนการเกษตรด้วยข้อมูล เพื่อให้ตลาดนำการผลิตอย่างแท้จริง"</p>
+</div>
+</div>
+
+<div class="loading" id="loadingScreen">
+<div class="loading-spinner"></div>
+<p>กำลังโหลดข้อมูลสินค้าเกษตรจังหวัดลำปาง...</p>
+</div>
+
+<script>
+const DATA_URL='https://raw.githubusercontent.com/korsorlampangweb/AgriMarket-Dashboard/main/AgriCropMarket-2569-II.csv';
+const MONTHS=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const GROUP_COLORS={'Mass Market & Commodity':'#A81752','Fresh & Seasonal Market':'#C93672','Agro-Processing & Industrial':'#E77DA5','Premium & Identity Market':'#C6A15B','Alternative & Niche Market':'#8B6914'};
+const GROUP_COLORS_LIGHT={'Mass Market & Commodity':'#f5d0e0','Fresh & Seasonal Market':'#f0b0c8','Agro-Processing & Industrial':'#f8d4e4','Premium & Identity Market':'#f0e0c0','Alternative & Niche Market':'#e0d8b0'};
+const GROUP_TH={'Mass Market & Commodity':'ตลาดสินค้าโภคภัณฑ์','Fresh & Seasonal Market':'ตลาดสินค้าสดและฤดูกาล','Agro-Processing & Industrial':'ตลาดสินค้าแปรรูปและอุตสาหกรรม','Premium & Identity Market':'ตลาดสินค้าพรีเมียมและอัตลักษณ์','Alternative & Niche Market':'ตลาดสินค้าทางเลือกและเฉพาะกลุ่ม'};
+const GROUP_DESC={
+'Mass Market & Commodity':'สินค้าโภคภัณฑ์ปริมาณมาก ราคาผันผวนตามตลาดโลก/ตลาดกลาง ใช้เป็นวัตถุดิบอาหารหรือบริโภคทั่วไปจำนวนมาก เช่น ข้าว ถั่วเหลือง ถั่วลิสง',
+'Fresh & Seasonal Market':'ผักและผลไม้สดตามฤดูกาล บริโภคสดในตลาดท้องถิ่น/ตลาดสด มีอายุการเก็บรักษาสั้น ต้องการระบบโลจิสติกส์และตลาดที่รวดเร็ว เช่น ลำไย ส้มโอ กล้วย ผักใบ กระเทียม หอมแดง',
+'Agro-Processing & Industrial':'สินค้าที่เน้นส่งเข้าโรงงานแปรรูปหรืออุตสาหกรรม เช่น ข้าวโพดเลี้ยงสัตว์ มันสำปะหลังโรงงาน อ้อยโรงงาน ปาล์มน้ำมัน สับปะรดโรงงาน กาแฟโรบัสต้า โกโก้ ครั่ง',
+'Premium & Identity Market':'สินค้าพรีเมียม มีเอกลักษณ์เฉพาะถิ่น หรือมูลค่าเพิ่มสูง ตลาดเฉพาะกลุ่มหรือส่งออกคุณภาพ เช่น ทุเรียน ลิ้นจี่ อะโวคาโด กาแฟอาราบิก้า มะขาม',
+'Alternative & Niche Market':'สินค้าทางเลือก ตลาดเฉพาะกลุ่ม (niche) สมุนไพร พืชพื้นถิ่น หรือสินค้าที่ยังมีปริมาณน้อยแต่มีศักยภาพ เช่น กระชายดำ ขมิ้นชัน ผักหวานป่า มะกรูด มะแขว่น'
+};
+let rawData=[],filteredData=[],allCharts={};
+let colMap={};
+
+function detectColumns(headers){
+const m={};
+headers.forEach((h,i)=>{
+const hl=h.trim().toLowerCase();
+if(/จังหวัด/.test(h))m.province=i;
+if(/อำเภอ/.test(h))m.district=i;
+if(/ตำบล/.test(h))m.subdistrict=i;
+if(h==='ประเภทสินค้า')m.prodType=i;
+if(h==='กลุ่มสินค้า')m.prodGroup=i;
+if(/กลุ่มสินค้าเกษตรใหม่/.test(h))m.newGroup=i;
+if(h==='ชนิดสินค้า')m.prodKind=i;
+if(h==='สินค้า')m.product=i;
+if(/จำนวนเกษตรกร/.test(h)&&!m.farmers)m.farmers=i;
+if(/เนื้อที่เพาะปลูก|เนื้อที่ยืนต้น/.test(h)&&!m.areaPlant)m.areaPlant=i;
+if(/เนื้อที่เก็บเกี่ยว|เนื้อที่ให้ผล/.test(h)&&!m.areaHarvest)m.areaHarvest=i;
+if(/จำนวนรอบ/.test(h))m.rounds=i;
+if(/ปริมาณผลผลิตปีปัจจุบัน/.test(h))m.prodCurrent=i;
+if(/การกระจายภายใน/.test(h))m.distIn=i;
+if(/การกระจายภายนอก/.test(h))m.distOut=i;
+if(/ปริมาณผลผลิตปีถัดไป/.test(h))m.prodNext=i;
+if(/หมายเหตุ/.test(h))m.remark=i;
+});
+// Find monthly columns
+const monthlyActual=[],monthlyForecast=[];
+headers.forEach((h,i)=>{
+if(/ผลผลิตรายเดือน|ข้อมูลผลผลิต.*เดือน/.test(h)&&/ประมาณการ/.test(h)===false){
+if(/ม\.?ค|jan|1/.test(h))monthlyActual[0]=i;
+if(/ก\.?พ|feb|2/.test(h))monthlyActual[1]=i;
+if(/มี\.?ค|mar|3/.test(h))monthlyActual[2]=i;
+if(/เม\.?ย|apr|4/.test(h))monthlyActual[3]=i;
+if(/พ\.?ค|may|5/.test(h))monthlyActual[4]=i;
+if(/มิ\.?ย|jun|6/.test(h))monthlyActual[5]=i;
+if(/ก\.?ค|jul|7/.test(h))monthlyActual[6]=i;
+if(/ส\.?ค|aug|8/.test(h))monthlyActual[7]=i;
+if(/ก\.?ย|sep|9/.test(h))monthlyActual[8]=i;
+if(/ต\.?ค|oct|10/.test(h))monthlyActual[9]=i;
+if(/พ\.?ย|nov|11/.test(h))monthlyActual[10]=i;
+if(/ธ\.?ค|dec|12/.test(h))monthlyActual[11]=i;
+}
+if(/ประมาณการ.*เดือน|forecast.*month/i.test(h)){
+if(/ม\.?ค|jan|1/.test(h))monthlyForecast[0]=i;
+if(/ก\.?พ|feb|2/.test(h))monthlyForecast[1]=i;
+if(/มี\.?ค|mar|3/.test(h))monthlyForecast[2]=i;
+if(/เม\.?ย|apr|4/.test(h))monthlyForecast[3]=i;
+if(/พ\.?ค|may|5/.test(h))monthlyForecast[4]=i;
+if(/มิ\.?ย|jun|6/.test(h))monthlyForecast[5]=i;
+if(/ก\.?ค|jul|7/.test(h))monthlyForecast[6]=i;
+if(/ส\.?ค|aug|8/.test(h))monthlyForecast[7]=i;
+if(/ก\.?ย|sep|9/.test(h))monthlyForecast[8]=i;
+if(/ต\.?ค|oct|10/.test(h))monthlyForecast[9]=i;
+if(/พ\.?ย|nov|11/.test(h))monthlyForecast[10]=i;
+if(/ธ\.?ค|dec|12/.test(h))monthlyForecast[11]=i;
+}
+});
+m.monthlyActual=monthlyActual;
+m.monthlyForecast=monthlyForecast;
+return m;
+}
+
+function pn(v){if(v===null||v===undefined||v===''||v==='-'||v==='N/A'||v==='n/a')return 0;let n=parseFloat(String(v).replace(/,/g,''));return isNaN(n)?0:n;}
+
+function loadData(){
+Papa.parse(DATA_URL,{
+download:true,
+encoding:'UTF-8',
+complete:function(results){
+const headers=results.data[0];
+colMap=detectColumns(headers);
+rawData=results.data.slice(1).filter(r=>r.some(c=>c&&c.trim())).map(r=>{
+const row={
+province:r[colMap.province]||'',
+district:r[colMap.district]||'',
+subdistrict:r[colMap.subdistrict]||'',
+prodType:r[colMap.prodType]||'',
+prodGroup:r[colMap.prodGroup]||'',
+newGroup:r[colMap.newGroup]||'',
+prodKind:r[colMap.prodKind]||'',
+product:r[colMap.product]||'',
+farmers:pn(r[colMap.farmers]),
+areaPlant:pn(r[colMap.areaPlant]),
+areaHarvest:pn(r[colMap.areaHarvest]),
+rounds:pn(r[colMap.rounds]),
+prodCurrent:pn(r[colMap.prodCurrent]),
+distIn:pn(r[colMap.distIn]),
+distOut:pn(r[colMap.distOut]),
+prodNext:pn(r[colMap.prodNext]),
+remark:r[colMap.remark]||'',
+monthlyActual:Array.from({length:12},(_,i)=>colMap.monthlyActual[i]!=null?pn(r[colMap.monthlyActual[i]]):0),
+monthlyForecast:Array.from({length:12},(_,i)=>colMap.monthlyForecast[i]!=null?pn(r[colMap.monthlyForecast[i]]):0)
+};
+return row;
+});
+populateFilters();
+filteredData=[...rawData];
+renderAll();
+document.getElementById('loadingScreen').style.display='none';
+},
+error:function(err){
+document.getElementById('loadingScreen').innerHTML='<p style="color:red">Error loading data: '+err.message+'</p>';
+}
+});
+}
+
+function populateFilters(){
+const districts=[...new Set(rawData.map(r=>r.district).filter(Boolean))].sort();
+const groups=[...new Set(rawData.map(r=>r.newGroup).filter(Boolean))].sort();
+const groupsOld=[...new Set(rawData.map(r=>r.prodGroup).filter(Boolean))].sort();
+const types=[...new Set(rawData.map(r=>r.prodType).filter(Boolean))].sort();
+const kinds=[...new Set(rawData.map(r=>r.prodKind).filter(Boolean))].sort();
+const products=[...new Set(rawData.map(r=>r.product).filter(Boolean))].sort();
+fillSelect('fDistrict',districts);
+fillSelect('fGroup',groups);
+fillSelect('fGroupOld',groupsOld);
+fillSelect('fType',types);
+fillSelect('fKind',kinds);
+fillSelect('fProduct',products);
+fillSelect('m4Group',groups);
+fillSelect('m4District',districts);
+}
+function fillSelect(id,items){
+const s=document.getElementById(id);
+items.forEach(it=>{const o=document.createElement('option');o.value=it;o.textContent=it;s.appendChild(o);});
+}
+
+function applyFilters(){
+const fd=document.getElementById('fDistrict').value;
+const fg=document.getElementById('fGroup').value;
+const fgo=document.getElementById('fGroupOld').value;
+const ft=document.getElementById('fType').value;
+const fk=document.getElementById('fKind').value;
+const fp=document.getElementById('fProduct').value;
+const fs=document.getElementById('fSearch').value.toLowerCase();
+filteredData=rawData.filter(r=>{
+if(fd&&r.district!==fd)return false;
+if(fg&&r.newGroup!==fg)return false;
+if(fgo&&r.prodGroup!==fgo)return false;
+if(ft&&r.prodType!==ft)return false;
+if(fk&&r.prodKind!==fk)return false;
+if(fp&&r.product!==fp)return false;
+if(fs&&!r.product.toLowerCase().includes(fs)&&!r.prodKind.toLowerCase().includes(fs))return false;
+return true;
+});
+renderAll();
+}
+function resetFilters(){
+['fDistrict','fGroup','fGroupOld','fType','fKind','fProduct'].forEach(id=>document.getElementById(id).value='');
+document.getElementById('fSearch').value='';
+filteredData=[...rawData];
+renderAll();
+}
+
+function switchModule(id,el){
+document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+if(el)el.classList.add('active');
+document.querySelector('.sidebar').classList.remove('open');
+}
+
+function fmt(n){if(n===0||n===null||n===undefined)return'0';return Math.round(n).toLocaleString('th-TH');}
+function fmtD(n){if(n===null||n===undefined||isNaN(n))return'N/A';return n.toLocaleString('th-TH',{maximumFractionDigits:2});}
+function sum(arr,key){return arr.reduce((s,r)=>s+(typeof key==='function'?key(r):r[key]||0),0);}
+
+function destroyChart(id){if(allCharts[id]){allCharts[id].destroy();delete allCharts[id];}}
+
+function renderAll(){
+renderM1();renderM2();renderM3();renderM4();renderM5();renderM6();renderM7();renderM8();
+}
+
+// ===== MODULE 1 =====
+function renderM1(){
+const d=filteredData;
+const totalProducts=new Set(d.map(r=>r.product).filter(Boolean)).size;
+const totalKinds=new Set(d.map(r=>r.prodKind).filter(Boolean)).size;
+const totalRecords=d.length;
+const totalFarmers=sum(d,'farmers');
+const totalAreaPlant=sum(d,'areaPlant');
+const totalAreaHarvest=sum(d,'areaHarvest');
+const totalProdCurrent=sum(d,'prodCurrent');
+const totalProdNext=sum(d,'prodNext');
+
+document.getElementById('kpiGrid').innerHTML=`
+<div class="kpi-card"><div class="kpi-label">จำนวนสินค้าเกษตร</div><div class="kpi-value">${fmt(totalProducts)}</div><div class="kpi-unit">ชนิด</div></div>
+<div class="kpi-card"><div class="kpi-label">จำนวนชนิดสินค้า</div><div class="kpi-value">${fmt(totalKinds)}</div><div class="kpi-unit">ชนิด</div></div>
+<div class="kpi-card"><div class="kpi-label">จำนวนรายการข้อมูล</div><div class="kpi-value">${fmt(totalRecords)}</div><div class="kpi-unit">รายการ</div></div>
+<div class="kpi-card"><div class="kpi-label">จำนวนเกษตรกร</div><div class="kpi-value">${fmt(totalFarmers)}</div><div class="kpi-unit">ครัวเรือน (ตามรายการ)</div></div>
+<div class="kpi-card"><div class="kpi-label">พื้นที่เพาะปลูก/ยืนต้น</div><div class="kpi-value">${fmt(totalAreaPlant)}</div><div class="kpi-unit">ไร่</div></div>
+<div class="kpi-card"><div class="kpi-label">พื้นที่เก็บเกี่ยว/ให้ผล</div><div class="kpi-value">${fmt(totalAreaHarvest)}</div><div class="kpi-unit">ไร่</div></div>
+<div class="kpi-card"><div class="kpi-label">ปริมาณผลผลิตปีปัจจุบัน</div><div class="kpi-value">${fmt(totalProdCurrent)}</div><div class="kpi-unit">ตัน</div></div>
+<div class="kpi-card"><div class="kpi-label">ปริมาณผลผลิตปีถัดไป</div><div class="kpi-value">${fmt(totalProdNext)}</div><div class="kpi-unit">ตัน</div></div>`;
+
+// Group aggregation
+const groupData={};
+d.forEach(r=>{
+const g=r.newGroup||'ไม่ระบุ';
+if(!groupData[g])groupData[g]={count:0,farmers:0,areaPlant:0,areaHarvest:0,prodCurrent:0,prodNext:0};
+groupData[g].count++;
+groupData[g].farmers+=r.farmers;
+groupData[g].areaPlant+=r.areaPlant;
+groupData[g].areaHarvest+=r.areaHarvest;
+groupData[g].prodCurrent+=r.prodCurrent;
+groupData[g].prodNext+=r.prodNext;
+});
+const gLabels=Object.keys(groupData).sort((a,b)=>groupData[b].prodCurrent-groupData[a].prodCurrent);
+const gColors=gLabels.map(l=>GROUP_COLORS[l]||'#999');
+
+// Donut
+destroyChart('m1Donut');
+allCharts.m1Donut=new Chart(document.getElementById('m1Donut'),{
+type:'doughnut',
+data:{labels:gLabels.map(l=>GROUP_TH[l]||l),datasets:[{data:gLabels.map(l=>groupData[l].prodCurrent),backgroundColor:gColors,borderWidth:2,borderColor:'#fff'}]},
+options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10,family:'IBM Plex Sans Thai'},padding:8}}}}
+});
+
+// Bar
+destroyChart('m1Bar');
+allCharts.m1Bar=new Chart(document.getElementById('m1Bar'),{
+type:'bar',
+data:{labels:gLabels.map(l=>GROUP_TH[l]||l),datasets:[{label:'ผลผลิตปัจจุบัน (ตัน)',data:gLabels.map(l=>groupData[l].prodCurrent),backgroundColor:gColors,borderRadius:4}]},
+options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}}},y:{ticks:{font:{size:10}}}}}
+});
+
+// Treemap (simple div-based)
+const tm=document.getElementById('m1Treemap');
+const kindData={};
+d.forEach(r=>{if(r.prodKind){if(!kindData[r.prodKind])kindData[r.prodKind]=0;kindData[r.prodKind]+=r.prodCurrent;}});
+const sorted=Object.entries(kindData).sort((a,b)=>b[1]-a[1]);
+const total=sorted.reduce((s,e)=>s+e[1],0)||1;
+let tmHtml='<div style="display:flex;flex-wrap:wrap;gap:4px;padding:8px">';
+const tmColors=['#A81752','#C93672','#E77DA5','#C6A15B','#8B6914','#d4789c','#b8933f','#9c5070','#7a9e54','#5b8a9e'];
+sorted.slice(0,20).forEach(([k,v],i)=>{
+const pct=(v/total*100);
+const sz=Math.max(60,Math.min(200,pct*3));
+tmHtml+=`<div style="background:${tmColors[i%tmColors.length]};color:#fff;padding:${sz/6}px ${sz/4}px;border-radius:6px;font-size:${Math.max(9,Math.min(14,pct/2))}px;min-width:${sz}px;text-align:center;display:flex;flex-direction:column;justify-content:center;flex:${Math.max(1,Math.floor(pct/3))}">
+<div style="font-weight:600">${k}</div><div style="font-size:10px;opacity:.85">${fmt(v)} ตัน (${pct.toFixed(1)}%)</div></div>`;
+});
+tmHtml+='</div>';
+tm.innerHTML=tmHtml;
+
+// Bar Compare
+destroyChart('m1BarCompare');
+allCharts.m1BarCompare=new Chart(document.getElementById('m1BarCompare'),{
+type:'bar',
+data:{labels:gLabels.map(l=>GROUP_TH[l]||l),datasets:[
+{label:'ผลผลิตปัจจุบัน',data:gLabels.map(l=>groupData[l].prodCurrent),backgroundColor:'#A81752',borderRadius:4},
+{label:'ผลผลิตปีถัดไป',data:gLabels.map(l=>groupData[l].prodNext),backgroundColor:'#C6A15B',borderRadius:4}
+]},
+options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10}}}},scales:{y:{ticks:{font:{size:10}}},x:{ticks:{font:{size:9}}}}}
+});
+
+// Top 10 products
+const prodAgg={};
+d.forEach(r=>{if(r.product){if(!prodAgg[r.product])prodAgg[r.product]={prod:0,farmers:0};prodAgg[r.product].prod+=r.prodCurrent;prodAgg[r.product].farmers+=r.farmers;}});
+const topProd=Object.entries(prodAgg).sort((a,b)=>b[1].prod-a[1].prod).slice(0,10);
+destroyChart('m1TopProd');
+allCharts.m1TopProd=new Chart(document.getElementById('m1TopProd'),{
+type:'bar',
+data:{labels:topProd.map(e=>e[0]),datasets:[{label:'ปริมาณผลผลิต (ตัน)',data:topProd.map(e=>e[1].prod),backgroundColor:'#C93672',borderRadius:4}]},
+options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}}},y:{ticks:{font:{size:10}}}}}
+});
+
+// Top 10 farmers table
+const topFarm=Object.entries(prodAgg).sort((a,b)=>b[1].farmers-a[1].farmers).slice(0,10);
+let tbl='<thead><tr><th>อันดับ</th><th>สินค้า</th><th class="num">เกษตรกร (ครัวเรือน)</th><th class="num">ผลผลิต (ตัน)</th></tr></thead><tbody>';
+topFarm.forEach(([k,v],i)=>{tbl+=`<tr><td>${i+1}</td><td>${k}</td><td class="num">${fmt(v.farmers)}</td><td class="num">${fmt(v.prod)}</td></tr>`;});
+tbl+='</tbody>';
+document.getElementById('m1Table').innerHTML=tbl;
+
+// Insight
+const topGroup=gLabels[0];
+const topDistrict=d.length?Object.entries(d.reduce((a,r)=>{a[r.district]=(a[r.district]||0)+1;return a;},{})).sort((a,b)=>b[1]-a[1])[0]:null;
+document.getElementById('execInsight').innerHTML=`<h4>📌 Key Insights จากข้อมูลจริง</h4><ul>
+<li>กลุ่มสินค้าที่มีปริมาณผลผลิตสูงสุด: <strong>${GROUP_TH[topGroup]||topGroup}</strong> (${fmt(groupData[topGroup]?.prodCurrent||0)} ตัน)</li>
+<li>สินค้าที่มีฐานเกษตรกรมากที่สุด: <strong>${topFarm[0]?.[0]||'N/A'}</strong> (${fmt(topFarm[0]?.[1].farmers||0)} ครัวเรือน)</li>
+<li>อำเภอที่มีการผลิตหลากหลาย: <strong>${topDistrict?.[0]||'N/A'}</strong> (${topDistrict?.[1]||0} รายการ)</li>
+<li>ปริมาณผลผลิตปีถัดไปรวม: <strong>${fmt(totalProdNext)}</strong> ตัน (เปลี่ยนแปลง ${totalProdCurrent?((totalProdNext-totalProdCurrent)/totalProdCurrent*100).toFixed(2):'N/A'}%)</li>
+</ul>`;
+}
+
+// ===== MODULE 2 =====
+function renderM2(){
+const d=filteredData;
+const groups=Object.keys(GROUP_TH);
+const gData={};
+groups.forEach(g=>{gData[g]={items:[],count:0,kinds:new Set(),records:0,farmers:0,areaPlant:0,prodCurrent:0,prodNext:0,districts:new Set()};});
+d.forEach(r=>{
+const g=r.newGroup;
+if(!gData[g])return;
+gData[g].count++;
+gData[g].kinds.add(r.prodKind);
+gData[g].records++;
+gData[g].farmers+=r.farmers;
+gData[g].areaPlant+=r.areaPlant;
+gData[g].prodCurrent+=r.prodCurrent;
+gData[g].prodNext+=r.prodNext;
+gData[g].districts.add(r.district);
+gData[g].items.push(r);
+});
+const totalProd=sum(Object.values(gData).map(g=>g.prodCurrent));
+
+let cardsHtml='';
+groups.forEach((g,i)=>{
+const gd=gData[g];
+const pct=totalProd?(gd.prodCurrent/totalProd*100).toFixed(2):'0';
+cardsHtml+=`<div class="segment-card" onclick="drillSegment('${g}')">
+<h4>${GROUP_TH[g]}</h4>
+<div class="seg-en">${g}</div>
+<div class="seg-desc">${GROUP_DESC[g]||''}</div>
+<div class="segment-stats">
+<div class="seg-stat"><span>จำนวนสินค้า</span><strong>${fmt(gd.count)}</strong></div>
+<div class="seg-stat"><span>ชนิดสินค้า</span><strong>${fmt(gd.kinds.size)}</strong></div>
+<div class="seg-stat"><span>รายการข้อมูล</span><strong>${fmt(gd.records)}</strong></div>
+<div class="seg-stat"><span>เกษตรกร</span><strong>${fmt(gd.farmers)}</strong></div>
+<div class="seg-stat"><span>พื้นที่เพาะปลูก</span><strong>${fmt(gd.areaPlant)} ไร่</strong></div>
+<div class="seg-stat"><span>ผลผลิตปัจจุบัน</span><strong>${fmt(gd.prodCurrent)} ตัน</strong></div>
+<div class="seg-stat"><span>ผลผลิตปีถัดไป</span><strong>${fmt(gd.prodNext)} ตัน</strong></div>
+<div class="seg-stat"><span>สัดส่วนผลผลิต</span><strong>${pct}%</strong></div>
+<div class="seg-stat"><span>จำนวนอำเภอ</span><strong>${fmt(gd.districts.size)}</strong></div>
+</div></div>`;
+});
+document.getElementById('segmentCards').innerHTML=cardsHtml;
+
+// Donut
+destroyChart('m2Donut');
+allCharts.m2Donut=new Chart(document.getElementById('m2Donut'),{
+type:'doughnut',
+data:{labels:groups.map(g=>GROUP_TH[g]),datasets:[{data:groups.map(g=>gData[g].prodCurrent),backgroundColor:groups.map(g=>GROUP_COLORS[g]),borderWidth:2,borderColor:'#fff'}]},
+options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10,family:'IBM Plex Sans Thai'}}}}}
+});
+
+// HBar
+destroyChart('m2HBar');
+allCharts.m2HBar=new Chart(document.getElementById('m2HBar'),{
+type:'bar',
+data:{labels:groups.map(g=>GROUP_TH[g]),datasets:[{data:groups.map(g=>gData[g].prodCurrent),backgroundColor:groups.map(g=>GROUP_COLORS[g]),borderRadius:4}]},
+options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}}},y:{ticks:{font:{size:10}}}}}
+});
+
+// Bubble
+destroyChart('m2Bubble');
+allCharts.m2Bubble=new Chart(document.getElementById('m2Bubble'),{
+type:'bubble',
+data:{datasets:groups.map((g,i)=>({label:GROUP_TH[g],data:[{x:gData[g].farmers,y:gData[g].prodCurrent,r:Math.max(5,Math.sqrt(gData[g].areaPlant)/10)}],backgroundColor:GROUP_COLORS[g]+'99',borderColor:GROUP_COLORS[g]}))},
+options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10}}}},scales:{x:{title:{display:true,text:'จำนวนเกษตรกร (ครัวเรือน)',font:{size:11}},ticks:{font:{size:10}}},y:{title:{display:true,text:'ผลผลิต (ตัน)',font:{size:11}},ticks:{font:{size:10}}}}}
+});
+
+// Matrix table
+let mhtml='<thead><tr><th>กลุ่มสินค้า</th><th>ชนิดสินค้า</th><th>สินค้า</th><th>อำเภอ</th><th class="num">เกษตรกร</th><th class="num">ผลผลิต (ตัน)</th></tr></thead><tbody>';
+d.slice(0,100).forEach(r=>{
+mhtml+=`<tr><td>${r.newGroup}</td><td>${r.prodKind}</td><td>${r.product}</td><td>${r.district}</td><td class="num">${fmt(r.farmers)}</td><td class="num">${fmt(r.prodCurrent)}</td></tr>`;
+});
+mhtml+='</tbody>';
+document.getElementById('m2Matrix').innerHTML=mhtml;
+}
+
+function drillSegment(g){
+document.getElementById('fGroup').value=g;
+applyFilters();
+switchModule('mod3',document.querySelector('[data-module="mod3"]'));
+}
+
+// ===== MODULE 3 =====
+function renderM3(){
+const d=filteredData;
+const prodAgg={};
+d.forEach(r=>{
+if(!r.product)return;
+if(!prodAgg[r.product])prodAgg[r.product]={prod:0,farmers:0,areaPlant:0,areaHarvest:0,distIn:0,distOut:0,group:r.newGroup};
+prodAgg[r.product].prod+=r.prodCurrent;
+prodAgg[r.product].farmers+=r.farmers;
+prodAgg[r.product].areaPlant+=r.areaPlant;
+prodAgg[r.product].areaHarvest+=r.areaHarvest;
+prodAgg[r.product].distIn+=r.distIn;
+prodAgg[r.product].distOut+=r.distOut;
+});
+const entries=Object.entries(prodAgg);
+const top10Prod=entries.sort((a,b)=>b[1].prod-a[1].prod).slice(0,10);
+const top10Farm=entries.sort((a,b)=>b[1].farmers-a[1].farmers).slice(0,10);
+const top10Area=entries.sort((a,b)=>b[1].areaPlant-a[1].areaPlant).slice(0,10);
+
+destroyChart('m3Bar1');
+allCharts.m3Bar1=new Chart(document.getElementById('m3Bar1'),{type:'bar',data:{labels:top10Prod.map(e=>e[0]),datasets:[{data:top10Prod.map(e=>e[1].prod),backgroundColor:'#A81752',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}}},y:{ticks:{font:{size:10}}}}}});
+
+destroyChart('m3Bar2');
+allCharts.m3Bar2=new Chart(document.getElementById('m3Bar2'),{type:'bar',data:{labels:top10Farm.map(e=>e[0]),datasets:[{data:top10Farm.map(e=>e[1].farmers),backgroundColor:'#C93672',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}}},y:{ticks:{font:{size:10}}}}}});
+
+destroyChart('m3Bar3');
+allCharts.m3Bar3=new Chart(document.getElementById('m3Bar3'),{type:'bar',data:{labels:top10Area.map(e=>e[0]),datasets:[{data:top10Area.map(e=>e[1].areaPlant),backgroundColor:'#C6A15B',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}}},y:{ticks:{font:{size:10}}}}}});
+
+// Scatter 1
+destroyChart('m3Scatter1');
+allCharts.m3Scatter1=new Chart(document.getElementById('m3Scatter1'),{type:'scatter',data:{datasets:[{label:'สินค้า',data:entries.filter(e=>e[1].areaPlant>0).map(e=>({x:e[1].areaPlant,y:e[1].prod})),backgroundColor:'#C9367288',pointRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:'พื้นที่เพาะปลูก (ไร่)',font:{size:10}},ticks:{font:{size:9}}},y:{title:{display:true,text:'ผลผลิต (ตัน)',font:{size:10}},ticks:{font:{size:9}}}}}});
+
+// Scatter 2
+destroyChart('m3Scatter2');
+allCharts.m3Scatter2=new Chart(document.getElementById('m3Scatter2'),{type:'scatter',data:{datasets:[{label:'สินค้า',data:entries.filter(e=>e[1].farmers>0).map(e=>({x:e[1].farmers,y:e[1].prod})),backgroundColor:'#A8175288',pointRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:'จำนวนเกษตรกร (ครัวเรือน)',font:{size:10}},ticks:{font:{size:9}}},y:{title:{display:true,text:'ผลผลิต (ตัน)',font:{size:10}},ticks:{font:{size:9}}}}}});
+
+// Heatmap
+const districts=[...new Set(d.map(r=>r.district).filter(Boolean))].sort();
+const products=[...new Set(d.map(r=>r.product).filter(Boolean))];
+const topProducts=entries.sort((a,b)=>b[1].prod-a[1].prod).slice(0,15).map(e=>e[0]);
+let hmHtml='<div class="heatmap-grid" style="grid-template-columns:140px repeat('+districts.length+',1fr)">';
+hmHtml+='<div class="heatmap-cell heatmap-header">สินค้า \\ อำเภอ</div>';
+districts.forEach(di=>{hmHtml+=`<div class="heatmap-cell heatmap-header" title="${di}">${di.substring(0,6)}</div>`;});
+topProducts.forEach(p=>{
+hmHtml+=`<div class="heatmap-cell heatmap-label" title="${p}">${p.substring(0,16)}</div>`;
+districts.forEach(di=>{
+const val=d.filter(r=>r.product===p&&r.district===di).reduce((s,r)=>s+r.prodCurrent,0);
+const maxVal=Math.max(...topProducts.map(tp=>Math.max(...districts.map(dii=>d.filter(r=>r.product===tp&&r.district===dii).reduce((s,r)=>s+r.prodCurrent,0)))));
+const intensity=maxVal>0?val/maxVal:0;
+const bg=intensity>0?`rgba(168,23,82,${0.1+intensity*0.8})`:'transparent';
+hmHtml+=`<div class="heatmap-cell" style="background:${bg}" title="${p} - ${di}: ${fmt(val)} ตัน">${val>0?fmt(val):''}</div>`;
+});
+});
+hmHtml+='</div>';
+document.getElementById('m3Heatmap').innerHTML=hmHtml;
+
+// Table
+let tbl='<thead><tr><th>สินค้า</th><th>กลุ่ม</th><th class="num">เกษตรกร</th><th class="num">พื้นที่เพาะปลูก</th><th class="num">พื้นที่เก็บเกี่ยว</th><th class="num">ผลผลิต (ตัน)</th><th class="num">ผลผลิต/ไร่</th><th class="num">ผลผลิต/ครัวเรือน</th><th class="num">กระจายภายใน</th><th class="num">กระจายภายนอก</th></tr></thead><tbody>';
+entries.sort((a,b)=>b[1].prod-a[1].prod).forEach(([k,v])=>{
+const yieldPerRai=v.areaHarvest>0?(v.prod/v.areaHarvest):0;
+const yieldPerFarm=v.farmers>0?(v.prod/v.farmers):0;
+tbl+=`<tr><td>${k}</td><td>${v.group||''}</td><td class="num">${fmt(v.farmers)}</td><td class="num">${fmt(v.areaPlant)}</td><td class="num">${fmt(v.areaHarvest)}</td><td class="num">${fmt(v.prod)}</td><td class="num">${fmtD(yieldPerRai)}</td><td class="num">${fmtD(yieldPerFarm)}</td><td class="num">${fmt(v.distIn)}</td><td class="num">${fmt(v.distOut)}</td></tr>`;
+});
+tbl+='</tbody>';
+document.getElementById('m3Table').innerHTML=tbl;
+}
+
+// ===== MODULE 4 =====
+function renderM4(){updateM4();}
+function updateM4(){
+const d=filteredData;
+const m4g=document.getElementById('m4Group')?.value||'';
+const m4p=document.getElementById('m4Product')?.value||'';
+const m4d=document.getElementById('m4District')?.value||'';
+let fd=d;
+if(m4g)fd=fd.filter(r=>r.newGroup===m4g);
+if(m4p)fd=fd.filter(r=>r.product===m4p);
+if(m4d)fd=fd.filter(r=>r.district===m4d);
+
+// Populate m4Product based on m4Group
+const m4ps=document.getElementById('m4Product');
+if(m4ps){
+const cur=m4ps.value;
+m4ps.innerHTML='<option value="">ทั้งหมด</option>';
+const prods=[...new Set(fd.map(r=>r.product).filter(Boolean))].sort();
+prods.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;m4ps.appendChild(o);});
+if(cur)m4ps.value=cur;
+}
+
+// Monthly totals
+const monthlyActual=Array(12).fill(0);
+const monthlyForecast=Array(12).fill(0);
+fd.forEach(r=>{for(let i=0;i<12;i++){monthlyActual[i]+=r.monthlyActual[i];monthlyForecast[i]+=r.monthlyForecast[i];}});
+
+destroyChart('m4Monthly');
+allCharts.m4Monthly=new Chart(document.getElementById('m4Monthly'),{type:'bar',data:{labels:MONTHS,datasets:[{label:'ผลผลิตจริง (ตัน)',data:monthlyActual,backgroundColor:'#A81752',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10}}}},scales:{y:{ticks:{font:{size:10}}},x:{ticks:{font:{size:10}}}}}});
+
+destroyChart('m4Forecast');
+allCharts.m4Forecast=new Chart(document.getElementById('m4Forecast'),{type:'bar',data:{labels:MONTHS,datasets:[{label:'ประมาณการ (ตัน)',data:monthlyForecast,backgroundColor:'#C6A15B',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10}}}},scales:{y:{ticks:{font:{size:10}}},x:{ticks:{font:{size:10}}}}}});
+
+destroyChart('m4Compare');
+allCharts.m4Compare=new Chart(document.getElementById('m4Compare'),{type:'line',data:{labels:MONTHS,datasets:[
+{label:'ผลผลิตจริง',data:monthlyActual,borderColor:'#A81752',backgroundColor:'#A8175233',fill:true,tension:.3},
+{label:'ประมาณการ',data:monthlyForecast,borderColor:'#C6A15B',backgroundColor:'#C6A15B33',fill:true,tension:.3,borderDash:[5,5]}
+]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10}}}},scales:{y:{ticks:{font:{size:10}}},x:{ticks:{font:{size:10}}}}}});
+
+// Calendar heatmap
+const products=[...new Set(fd.map(r=>r.product).filter(Boolean))].slice(0,20);
+let calHtml='<div class="heatmap-grid" style="grid-template-columns:140px repeat(12,1fr)">';
+calHtml+='<div class="heatmap-cell heatmap-header">สินค้า</div>';
+MONTHS.forEach(m=>{calHtml+=`<div class="heatmap-cell heatmap-header">${m}</div>`;});
+products.forEach(p=>{
+calHtml+=`<div class="heatmap-cell heatmap-label" title="${p}">${p.substring(0,16)}</div>`;
+for(let i=0;i<12;i++){
+const val=fd.filter(r=>r.product===p).reduce((s,r)=>s+r.monthlyActual[i],0);
+const maxV=Math.max(...products.map(pp=>Math.max(...Array.from({length:12},(_,j)=>fd.filter(r=>r.product===pp).reduce((s,r)=>s+r.monthlyActual[j],0)))));
+const intensity=maxV>0?val/maxV:0;
+const bg=intensity>0?`rgba(201,54,114,${0.1+intensity*0.8})`:'transparent';
+calHtml+=`<div class="heatmap-cell" style="background:${bg}" title="${p} - ${MONTHS[i]}: ${fmt(val)} ตัน">${val>0?fmt(val):''}</div>`;
+}
+});
+calHtml+='</div>';
+document.getElementById('m4Calendar').innerHTML=calHtml;
+
+// Concentration Matrix
+let concHtml='<thead><tr><th>สินค้า</th>';
+MONTHS.forEach(m=>{concHtml+=`<th class="num">${m}</th>`;});
+concHtml+='<th class="num">รวม</th><th class="num">เดือนสูงสุด</th></tr></thead><tbody>';
+products.forEach(p=>{
+const mv=Array.from({length:12},(_,i)=>fd.filter(r=>r.product===p).reduce((s,r)=>s+r.monthlyActual[i],0));
+const total=mv.reduce((a,b)=>a+b,0);
+const maxIdx=mv.indexOf(Math.max(...mv));
+concHtml+=`<tr><td>${p}</td>`;
+mv.forEach(v=>{concHtml+=`<td class="num">${v>0?fmt(v):'-'}</td>`;});
+concHtml+=`<td class="num"><strong>${fmt(total)}</strong></td><td>${MONTHS[maxIdx]}</td></tr>`;
+});
+concHtml+='</tbody>';
+document.getElementById('m4ConcMatrix').innerHTML=concHtml;
+
+// Seasonal Alert
+const peakMonth=monthlyActual.indexOf(Math.max(...monthlyActual));
+const peakProducts=products.filter(p=>{const mv=Array.from({length:12},(_,i)=>fd.filter(r=>r.product===p).reduce((s,r)=>s+r.monthlyActual[i],0));return mv[peakMonth]>0;});
+document.getElementById('seasonalAlert').innerHTML=`<strong>⚠️ Seasonal Intelligence Alert:</strong> เดือน${MONTHS[peakMonth]}มีผลผลิตสูงสุดรวม ${fmt(monthlyActual[peakMonth])} ตัน มีสินค้า ${peakProducts.length} ชนิดที่มีผลผลิตในเดือนนี้: ${peakProducts.slice(0,5).join(', ')}${peakProducts.length>5?' ฯลฯ':''}`;
+}
+
+// ===== MODULE 5 =====
+function renderM5(){
+const d=filteredData;
+const districts=[...new Set(d.map(r=>r.district).filter(Boolean))].sort();
+const distAgg={};
+districts.forEach(di=>{
+const rd=d.filter(r=>r.district===di);
+distAgg[di]={
+prod:sum(rd,'prodCurrent'),
+farmers:sum(rd,'farmers'),
+areaPlant:sum(rd,'areaPlant'),
+areaHarvest:sum(rd,'areaHarvest'),
+records:rd.length,
+products:new Set(rd.map(r=>r.product).filter(Boolean)),
+groups:new Set(rd.map(r=>r.newGroup).filter(Boolean))
+};
+});
+
+destroyChart('m5Bar1');
+allCharts.m5Bar1=new Chart(document.getElementById('m5Bar1'),{type:'bar',data:{labels:districts,datasets:[{data:districts.map(di=>distAgg[di].prod),backgroundColor:'#A81752',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:10}}},x:{ticks:{font:{size:8},maxRotation:45}}}}});
+
+destroyChart('m5Bar2');
+allCharts.m5Bar2=new Chart(document.getElementById('m5Bar2'),{type:'bar',data:{labels:districts,datasets:[{data:districts.map(di=>distAgg[di].farmers),backgroundColor:'#C93672',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:10}}},x:{ticks:{font:{size:8},maxRotation:45}}}}});
+
+destroyChart('m5Bar3');
+allCharts.m5Bar3=new Chart(document.getElementById('m5Bar3'),{type:'bar',data:{labels:districts,datasets:[
+{label:'พื้นที่เพาะปลูก',data:districts.map(di=>distAgg[di].areaPlant),backgroundColor:'#C6A15B',borderRadius:4},
+{label:'พื้นที่เก็บเกี่ยว',data:districts.map(di=>distAgg[di].areaHarvest),backgroundColor:'#E8D5A8',borderRadius:4}
+]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10}}}},scales:{y:{ticks:{font:{size:10}}},x:{ticks:{font:{size:8},maxRotation:45}}}}});
+
+// Heatmap
+const groups=Object.keys(GROUP_TH);
+let hmHtml='<div class="heatmap-grid" style="grid-template-columns:120px repeat('+groups.length+',1fr)">';
+hmHtml+='<div class="heatmap-cell heatmap-header">อำเภอ \\ กลุ่ม</div>';
+groups.forEach(g=>{hmHtml+=`<div class="heatmap-cell heatmap-header">${GROUP_TH[g].substring(0,10)}</div>`;});
+districts.forEach(di=>{
+hmHtml+=`<div class="heatmap-cell heatmap-label">${di}</div>`;
+groups.forEach(g=>{
+const val=d.filter(r=>r.district===di&&r.newGroup===g).reduce((s,r)=>s+r.prodCurrent,0);
+const maxV=Math.max(...districts.map(dd=>Math.max(...groups.map(gg=>d.filter(r=>r.district===dd&&r.newGroup===gg).reduce((s,r)=>s+r.prodCurrent,0)))));
+const intensity=maxV>0?val/maxV:0;
+const bg=intensity>0?`rgba(198,161,91,${0.1+intensity*0.8})`:'transparent';
+hmHtml+=`<div class="heatmap-cell" style="background:${bg}" title="${di} - ${GROUP_TH[g]}: ${fmt(val)} ตัน">${val>0?fmt(val):''}</div>`;
+});
+});
+hmHtml+='</div>';
+document.getElementById('m5Heatmap').innerHTML=hmHtml;
+
+// Table
+let tbl='<thead><tr><th>อำเภอ</th><th class="num">จำนวนรายการ</th><th class="num">จำนวนสินค้า</th><th class="num">จำนวนกลุ่ม</th><th class="num">เกษตรกร</th><th class="num">พื้นที่เพาะปลูก</th><th class="num">ผลผลิต (ตัน)</th></tr></thead><tbody>';
+districts.forEach(di=>{
+const da=distAgg[di];
+tbl+=`<tr><td>${di}</td><td class="num">${fmt(da.records)}</td><td class="num">${fmt(da.products.size)}</td><td class="num">${fmt(da.groups.size)}</td><td class="num">${fmt(da.farmers)}</td><td class="num">${fmt(da.areaPlant)}</td><td class="num">${fmt(da.prod)}</td></tr>`;
+});
+tbl+='</tbody>';
+document.getElementById('m5Table').innerHTML=tbl;
+}
+
+// ===== MODULE 6 =====
+function renderM6(){
+const d=filteredData;
+const groups=Object.keys(GROUP_TH);
+const gDist={};
+groups.forEach(g=>{
+const rd=d.filter(r=>r.newGroup===g);
+gDist[g]={inProv:sum(rd,'distIn'),outProv:sum(rd,'distOut'),total:sum(rd,'prodCurrent')};
+});
+
+destroyChart('m6StackBar');
+allCharts.m6StackBar=new Chart(document.getElementById('m6StackBar'),{type:'bar',data:{labels:groups.map(g=>GROUP_TH[g]),datasets:[
+{label:'กระจายภายในจังหวัด',data:groups.map(g=>gDist[g].inProv),backgroundColor:'#A81752',borderRadius:4},
+{label:'กระจายภายนอกจังหวัด',data:groups.map(g=>gDist[g].outProv),backgroundColor:'#C6A15B',borderRadius:4}
+]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10}}}},scales:{x:{stacked:true,ticks:{font:{size:9}}},y:{stacked:true,ticks:{font:{size:10}}}}}});
+
+const totalIn=sum(Object.values(gDist).map(g=>g.inProv));
+const totalOut=sum(Object.values(gDist).map(g=>g.outOut||g.outProv));
+destroyChart('m6Donut');
+allCharts.m6Donut=new Chart(document.getElementById('m6Donut'),{type:'doughnut',data:{labels:['กระจายภายในจังหวัด','กระจายภายนอกจังหวัด'],datasets:[{data:[totalIn,totalOut],backgroundColor:['#A81752','#C6A15B'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
+
+// Sankey (simplified SVG)
+const sankeyDiv=document.getElementById('m6Sankey');
+const totalAll=totalIn+totalOut||1;
+let svgHtml='<svg viewBox="0 0 800 350" style="width:100%;height:350px">';
+const leftX=50,rightX=600,midX=350;
+// Left nodes (groups)
+const nodeH=50,gap=10;
+groups.forEach((g,i)=>{
+const y=20+i*(nodeH+gap);
+const w=Math.max(20,(gDist[g].total/Math.max(...Object.values(gDist).map(v=>v.total)))*200);
+svgHtml+=`<rect x="${leftX}" y="${y}" width="${w}" height="${nodeH}" fill="${GROUP_COLORS[g]}" rx="4" opacity="0.85"/>`;
+svgHtml+=`<text x="${leftX+w+5}" y="${y+30}" font-size="10" fill="#342832" font-family="IBM Plex Sans Thai">${GROUP_TH[g].substring(0,15)}</text>`;
+// Lines to right
+const inRatio=gDist[g].total>0?gDist[g].inProv/gDist[g].total:0;
+svgHtml+=`<path d="M${leftX+w} ${y+15} C${midX} ${y+15}, ${midX} 100, ${rightX} 100" stroke="${GROUP_COLORS[g]}" stroke-width="${Math.max(2,inRatio*20)}" fill="none" opacity="0.5"/>`;
+svgHtml+=`<path d="M${leftX+w} ${y+35} C${midX} ${y+35}, ${midX} 250, ${rightX} 250" stroke="${GROUP_COLORS[g]}" stroke-width="${Math.max(2,(1-inRatio)*20)}" fill="none" opacity="0.5"/>`;
+});
+// Right nodes
+svgHtml+=`<rect x="${rightX}" y="80" width="150" height="50" fill="#A81752" rx="6" opacity="0.9"/>`;
+svgHtml+=`<text x="${rightX+10}" y="110" font-size="12" fill="#fff" font-family="IBM Plex Sans Thai" font-weight="600">ภายในจังหวัด</text>`;
+svgHtml+=`<text x="${rightX+10}" y="125" font-size="10" fill="#fff" font-family="IBM Plex Sans Thai">${fmt(totalIn)} ตัน</text>`;
+svgHtml+=`<rect x="${rightX}" y="230" width="150" height="50" fill="#C6A15B" rx="6" opacity="0.9"/>`;
+svgHtml+=`<text x="${rightX+10}" y="260" font-size="12" fill="#fff" font-family="IBM Plex Sans Thai" font-weight="600">ภายนอกจังหวัด</text>`;
+svgHtml+=`<text x="${rightX+10}" y="275" font-size="10" fill="#fff" font-family="IBM Plex Sans Thai">${fmt(totalOut)} ตัน</text>`;
+svgHtml+='</svg>';
+sankeyDiv.innerHTML=svgHtml;
+
+// Table
+const prodDist={};
+d.forEach(r=>{
+if(!r.product)return;
+if(!prodDist[r.product])prodDist[r.product]={prod:0,inP:0,outP:0,group:r.newGroup};
+prodDist[r.product].prod+=r.prodCurrent;
+prodDist[r.product].inP+=r.distIn;
+prodDist[r.product].outP+=r.distOut;
+});
+const sorted=Object.entries(prodDist).sort((a,b)=>b[1].prod-a[1].prod);
+let tbl='<thead><tr><th>สินค้า</th><th>กลุ่ม</th><th class="num">ผลผลิตรวม</th><th class="num">กระจายภายใน</th><th class="num">กระจายภายนอก</th><th class="num">% ภายใน</th><th class="num">% ภายนอก</th></tr></thead><tbody>';
+sorted.forEach(([k,v])=>{
+const pctIn=v.prod>0?(v.inP/v.prod*100).toFixed(1):'0';
+const pctOut=v.prod>0?(v.outP/v.prod*100).toFixed(1):'0';
+tbl+=`<tr><td>${k}</td><td>${v.group||''}</td><td class="num">${fmt(v.prod)}</td><td class="num">${fmt(v.inP)}</td><td class="num">${fmt(v.outP)}</td><td class="num">${pctIn}%</td><td class="num">${pctOut}%</td></tr>`;
+});
+tbl+='</tbody>';
+document.getElementById('m6Table').innerHTML=tbl;
+}
+
+// ===== MODULE 7 =====
+function renderM7(){
+const d=filteredData;
+const prodAgg={};
+d.forEach(r=>{
+if(!r.product)return;
+if(!prodAgg[r.product])prodAgg[r.product]={current:0,next:0,group:r.newGroup};
+prodAgg[r.product].current+=r.prodCurrent;
+prodAgg[r.product].next+=r.prodNext;
+});
+const entries=Object.entries(prodAgg).filter(e=>e[1].current>0||e[1].next>0);
+const top15=entries.sort((a,b)=>(b[1].current+b[1].next)-(a[1].current+a[1].next)).slice(0,15);
+
+destroyChart('m7Cluster');
+allCharts.m7Cluster=new Chart(document.getElementById('m7Cluster'),{type:'bar',data:{labels:top15.map(e=>e[0]),datasets:[
+{label:'ปีปัจจุบัน',data:top15.map(e=>e[1].current),backgroundColor:'#A81752',borderRadius:4},
+{label:'ปีถัดไป',data:top15.map(e=>e[1].next),backgroundColor:'#C6A15B',borderRadius:4}
+]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10}}}},scales:{y:{ticks:{font:{size:10}}},x:{ticks:{font:{size:9},maxRotation:45}}}}});
+
+// Variance
+const variance=entries.map(e=>({name:e[0],diff:e[1].next-e[1].current,pct:e[1].current>0?((e[1].next-e[1].current)/e[1].current*100):null}));
+const topVar=variance.sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff)).slice(0,15);
+destroyChart('m7Variance');
+allCharts.m7Variance=new Chart(document.getElementById('m7Variance'),{type:'bar',data:{labels:topVar.map(e=>e.name),datasets:[{label:'ผลต่าง (ตัน)',data:topVar.map(e=>e.diff),backgroundColor:topVar.map(e=>e.diff>=0?'#4CAF50':'#E53935'),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}}},y:{ticks:{font:{size:9}}}}}});
+
+// Monthly forecast trend
+const monthlyCurrent=Array(12).fill(0);
+const monthlyNext=Array(12).fill(0);
+d.forEach(r=>{for(let i=0;i<12;i++){monthlyCurrent[i]+=r.monthlyActual[i];monthlyNext[i]+=r.monthlyForecast[i];}});
+destroyChart('m7Trend');
+allCharts.m7Trend=new Chart(document.getElementById('m7Trend'),{type:'line',data:{labels:MONTHS,datasets:[
+{label:'ผลผลิตรายเดือน (ปัจจุบัน)',data:monthlyCurrent,borderColor:'#A81752',backgroundColor:'#A8175222',fill:true,tension:.3},
+{label:'ประมาณการปีถัดไป',data:monthlyNext,borderColor:'#C6A15B',backgroundColor:'#C6A15B22',fill:true,tension:.3,borderDash:[5,5]}
+]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10}}}},scales:{y:{ticks:{font:{size:10}}},x:{ticks:{font:{size:10}}}}}});
+
+// Planning Insight
+const groups=Object.keys(GROUP_TH);
+let insightHtml='<h4>📋 Planning Intelligence แยกตาม 5 กลุ่มสินค้า</h4><ul>';
+groups.forEach(g=>{
+const gd=d.filter(r=>r.newGroup===g);
+const cur=sum(gd,'prodCurrent');
+const nxt=sum(gd,'prodNext');
+const diff=nxt-cur;
+const pct=cur>0?((diff/cur)*100).toFixed(2):'N/A';
+const dir=diff>0?'เพิ่มขึ้น':'ลดลง';
+insightHtml+=`<li><strong>${GROUP_TH[g]}</strong>: ผลผลิตปัจจุบัน ${fmt(cur)} ตัน → ปีถัดไป ${fmt(nxt)} ตัน (${dir} ${pct!=='N/A'?Math.abs(pct)+'%':''})</li>`;
+});
+insightHtml+='</ul>';
+document.getElementById('m7PlanningInsight').innerHTML=insightHtml;
+
+// Table
+const districts=[...new Set(d.map(r=>r.district).filter(Boolean))].sort();
+let tbl='<thead><tr><th>อำเภอ</th><th class="num">ผลผลิตปัจจุบัน</th><th class="num">ผลผลิตปีถัดไป</th><th class="num">ผลต่าง</th><th class="num">% การเปลี่ยนแปลง</th></tr></thead><tbody>';
+districts.forEach(di=>{
+const rd=d.filter(r=>r.district===di);
+const cur=sum(rd,'prodCurrent');
+const nxt=sum(rd,'prodNext');
+const diff=nxt-cur;
+const pct=cur>0?((diff/cur)*100).toFixed(2):'N/A';
+tbl+=`<tr><td>${di}</td><td class="num">${fmt(cur)}</td><td class="num">${fmt(nxt)}</td><td class="num">${diff>=0?'+':''}${fmt(diff)}</td><td class="num">${pct!=='N/A'?pct+'%':'N/A'}</td></tr>`;
+});
+tbl+='</tbody>';
+document.getElementById('m7Table').innerHTML=tbl;
+}
+
+// ===== MODULE 8 =====
+function renderM8(){
+const d=filteredData;
+const groups=Object.keys(GROUP_TH);
+const districts=[...new Set(d.map(r=>r.district).filter(Boolean))];
+
+// 1. Market Segment Insight
+const gData={};
+groups.forEach(g=>{const rd=d.filter(r=>r.newGroup===g);gData[g]={prod:sum(rd,'prodCurrent'),count:rd.length,farmers:sum(rd,'farmers')};});
+const topG=Object.entries(gData).sort((a,b)=>b[1].prod-a[1].prod)[0];
+
+// 2. Production Insight
+const totalProd=sum(d,'prodCurrent');
+const totalArea=sum(d,'areaPlant');
+const totalFarmers=sum(d,'farmers');
+const topProdItem=Object.entries(d.reduce((a,r)=>{a[r.product]=(a[r.product]||0)+r.prodCurrent;return a;},{})).sort((a,b)=>b[1]-a[1])[0];
+
+// 3. Seasonal Insight
+const monthly=Array(12).fill(0);
+d.forEach(r=>{for(let i=0;i<12;i++)monthly[i]+=r.monthlyActual[i];});
+const peakMonth=monthly.indexOf(Math.max(...monthly));
+const lowMonth=monthly.indexOf(Math.min(...monthly.filter(v=>v>0))||0);
+
+// 4. Geographic Insight
+const distProd={};
+districts.forEach(di=>{distProd[di]=sum(d.filter(r=>r.district===di),'prodCurrent');});
+const topDist=Object.entries(distProd).sort((a,b)=>b[1]-a[1])[0];
+
+// 5. Distribution Insight
+const totalIn=sum(d,'distIn');
+const totalOut=sum(d,'distOut');
+const pctIn=totalProd>0?(totalIn/totalProd*100).toFixed(1):'0';
+const pctOut=totalProd>0?(totalOut/totalProd*100).toFixed(1):'0';
+
+document.getElementById('policyCards').innerHTML=`
+<div class="policy-card"><h4><span class="dim-num">1</span>Market Segment Insight</h4>
+<div class="fact">ข้อเท็จจริง: กลุ่ม${GROUP_TH[topG[0]]}มีปริมาณผลผลิตสูงสุด ${fmt(topG[1].prod)} ตัน คิดเป็นสัดส่วน ${totalProd>0?(topG[1].prod/totalProd*100).toFixed(1):0}% ของผลผลิตรวม</div>
+<ul><li>โครงสร้างสินค้าเกษตรประกอบด้วย ${groups.length} กลุ่มยุทธศาสตร์</li>
+<li>กลุ่มที่มีจำนวนรายการมากที่สุด: ${Object.entries(gData).sort((a,b)=>b[1].count-a[1].count)[0]?.[0]||'N/A'}</li>
+<li>กลุ่มที่มีฐานเกษตรกรมากที่สุด: ${Object.entries(gData).sort((a,b)=>b[1].farmers-a[1].farmers)[0]?.[0]||'N/A'}</li></ul></div>
+
+<div class="policy-card"><h4><span class="dim-num">2</span>Production Insight</h4>
+<div class="fact">ข้อเท็จจริง: ปริมาณผลผลิตรวม ${fmt(totalProd)} ตัน จากพื้นที่ ${fmt(totalArea)} ไร่ เกษตรกร ${fmt(totalFarmers)} ครัวเรือน</div>
+<ul><li>สินค้าที่มีผลผลิตสูงสุด: ${topProdItem?.[0]||'N/A'} (${fmt(topProdItem?.[1]||0)} ตัน)</li>
+<li>ผลผลิตเฉลี่ยต่อไร่: ${totalArea>0?fmtD(totalProd/totalArea):'N/A'} ตัน/ไร่</li>
+<li>ผลผลิตเฉลี่ยต่อครัวเรือน: ${totalFarmers>0?fmtD(totalProd/totalFarmers):'N/A'} ตัน/ครัวเรือน</li></ul></div>
+
+<div class="policy-card"><h4><span class="dim-num">3</span>Seasonal Insight</h4>
+<div class="fact">ข้อเท็จจริง: เดือน${MONTHS[peakMonth]}มีผลผลิตสูงสุด ${fmt(monthly[peakMonth])} ตัน</div>
+<ul><li>ช่วงเวลาที่ผลผลิตกระจุกตัวมากที่สุด: ${MONTHS[peakMonth]}</li>
+<li>ช่วงเวลาที่ผลผลิตน้อยที่สุด: ${MONTHS[lowMonth>=0?lowMonth:0]}</li>
+<li>จำเป็นต้องวางแผนการบริหารจัดการผลผลิตในช่วงที่ผลผลิตออกพร้อมกันหลายชนิด</li></ul></div>
+
+<div class="policy-card"><h4><span class="dim-num">4</span>Geographic Insight</h4>
+<div class="fact">ข้อเท็จจริง: ${topDist?.[0]||'N/A'}มีปริมาณผลผลิตสูงสุด ${fmt(topDist?.[1]||0)} ตัน จาก ${districts.length} อำเภอ</div>
+<ul><li>อำเภอที่มีความหลากหลายทางการผลิตมากที่สุดต้องการการวิเคราะห์เชิงลึก</li>
+<li>แต่ละอำเภอมีโครงสร้างสินค้าที่แตกต่างกันตามสภาพพื้นที่</li>
+<li>ควรส่งเสริมการเชื่อมโยงการผลิตระหว่างอำเภอ</li></ul></div>
+
+<div class="policy-card"><h4><span class="dim-num">5</span>Distribution Insight</h4>
+<div class="fact">ข้อเท็จจริง: กระจายภายในจังหวัด ${fmt(totalIn)} ตัน (${pctIn}%) กระจายภายนอกจังหวัด ${fmt(totalOut)} ตัน (${pctOut}%)</div>
+<ul><li>สินค้าที่มีสัดส่วนการกระจายภายนอกสูงแสดงถึงศักยภาพทางการตลาดข้ามจังหวัด</li>
+<li>จำเป็นต้องพัฒนาระบบโลจิสติกส์เพื่อรองรับการกระจายสินค้า</li>
+<li>ข้อมูลการกระจายช่วยในการวางแผนตลาดและช่องทางจำหน่าย</li></ul></div>`;
+
+// Strategic Proposals
+document.getElementById('strategicProposals').innerHTML=`
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-top:12px">
+<div style="background:var(--pale-pink);padding:16px;border-radius:8px;border-left:4px solid var(--champagne-gold)">
+<h5 style="color:var(--deep-pink);font-size:13px;margin-bottom:8px">📌 ข้อเสนอเพื่อการวางแผน</h5>
+<ul style="font-size:12px;line-height:1.8;padding-left:16px">
+<li>ส่งเสริมการผลิตตามปฏิทินสินค้าเกษตรเพื่อลดความกระจุกตัวของผลผลิต</li>
+<li>พัฒนาระบบเชื่อมโยงข้อมูลระหว่างสำนักงานเกษตรจังหวัดและอำเภอทั้ง 13 อำเภอ</li>
+<li>วางแผนการผลิตโดยอ้างอิงข้อมูลปริมาณผลผลิตและการกระจายสินค้า</li>
+<li>ส่งเสริมการแปรรูปสินค้าเกษตรเพื่อเพิ่มมูลค่าและลดความเสี่ยงด้านราคา</li>
+<li>พัฒนาระบบข้อมูลการตลาดแบบ Real-time เพื่อสนับสนุนการตัดสินใจ</li>
+</ul></div>
+<div style="background:var(--pale-pink);padding:16px;border-radius:8px;border-left:4px solid var(--rich-rose)">
+<h5 style="color:var(--deep-pink);font-size:13px;margin-bottom:8px">📊 ข้อมูลที่ยังขาดและจำเป็นต้องจัดเก็บเพิ่มเติม</h5>
+<ul style="font-size:12px;line-height:1.8;padding-left:16px">
+<li>ข้อมูลราคาจำหน่ายสินค้าเกษตรรายสัปดาห์/รายเดือน</li>
+<li>ข้อมูลต้นทุนการผลิตต่อไร่/ต่อครัวเรือน</li>
+<li>ข้อมูลช่องทางจำหน่ายและตลาดเป้าหมาย</li>
+<li>ข้อมูลความต้องการของตลาด (Market Demand)</li>
+<li>ข้อมูลคุณภาพสินค้าและมาตรฐานการรับรอง</li>
+<li>ข้อมูลการแปรรูปและมูลค่าเพิ่ม</li>
+</ul></div>
+<div style="background:var(--pale-pink);padding:16px;border-radius:8px;border-left:4px solid var(--medium-pink)">
+<h5 style="color:var(--deep-pink);font-size:13px;margin-bottom:8px">🎯 ข้อสังเกตเชิงวิเคราะห์</h5>
+<ul style="font-size:12px;line-height:1.8;padding-left:16px">
+<li>การกระจุกตัวของผลผลิตในบางช่วงเวลาอาจส่งผลต่อราคาจำหน่าย</li>
+<li>สินค้าที่มีสัดส่วนการกระจายภายนอกสูงมีศักยภาพในการขยายตลาด</li>
+<li>ความแตกต่างของผลผลิตต่อไร่ระหว่างสินค้าสะท้อนโอกาสในการพัฒนา</li>
+<li>การวางแผนการผลิตควรคำนึงถึงสมดุลระหว่างอุปสงค์และอุปทาน</li>
+</ul></div>
+</div>`;
+}
+
+// ===== EXPORT =====
+function exportExcel(){
+const ws=XLSX.utils.json_to_sheet(filteredData.map(r=>({
+'จังหวัด':r.province,'อำเภอ':r.district,'ตำบล':r.subdistrict,
+'ประเภทสินค้า':r.prodType,'กลุ่มสินค้า':r.prodGroup,'กลุ่มสินค้าเกษตรใหม่':r.newGroup,
+'ชนิดสินค้า':r.prodKind,'สินค้า':r.product,
+'จำนวนเกษตรกร':r.farmers,'พื้นที่เพาะปลูก':r.areaPlant,'พื้นที่เก็บเกี่ยว':r.areaHarvest,
+'จำนวนรอบ':r.rounds,'ผลผลิตปัจจุบัน':r.prodCurrent,'กระจายภายใน':r.distIn,'กระจายภายนอก':r.distOut,
+'ผลผลิตปีถัดไป':r.prodNext,'หมายเหตุ':r.remark
+})));
+const wb=XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb,ws,'Crop-Data-2569');
+XLSX.writeFile(wb,'Lampang_AgriMarket_2569.xlsx');
+}
+function exportCSV(){
+const csv=Papa.unparse(filteredData.map(r=>({
+'จังหวัด':r.province,'อำเภอ':r.district,'ตำบล':r.subdistrict,
+'ประเภทสินค้า':r.prodType,'กลุ่มสินค้า':r.prodGroup,'กลุ่มสินค้าเกษตรใหม่':r.newGroup,
+'ชนิดสินค้า':r.prodKind,'สินค้า':r.product,
+'จำนวนเกษตรกร':r.farmers,'พื้นที่เพาะปลูก':r.areaPlant,'พื้นที่เก็บเกี่ยว':r.areaHarvest,
+'จำนวนรอบ':r.rounds,'ผลผลิตปัจจุบัน':r.prodCurrent,'กระจายภายใน':r.distIn,'กระจายภายนอก':r.distOut,
+'ผลผลิตปีถัดไป':r.prodNext
+})));
+const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='Lampang_AgriMarket_2569.csv';link.click();
+}
+
+// Init
+window.addEventListener('DOMContentLoaded',loadData);
+</script>
+</body>
+</html>
